@@ -4,7 +4,6 @@ const { body } = require("express-validator")
 const userController = require('../controllers/user.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-
 router.post('/register', [
     body('email').isEmail().withMessage('Invalid Email'),
     body('fullname.firstname').isLength({ min: 3 }).withMessage('First name must be at least 3 characters long'),
@@ -12,6 +11,12 @@ router.post('/register', [
 ],
     userController.registerUser
 )
+
+
+router.get('/test', (req, res) => {
+    res.send('888Captain route is working');
+});
+
 
 router.post('/login', [
     body('email').isEmail().withMessage('Invalid Email'),
