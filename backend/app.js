@@ -14,7 +14,14 @@ const app = express();
 connectToDB();
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+    origin: 'http://localhost:5173', // Allow requests from your frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Allow cookies and other credentials
+  };
+  
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -28,5 +35,10 @@ app.get('/', (req, res) => {
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
 
-// Export app
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
 module.exports = app;
