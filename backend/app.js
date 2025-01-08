@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser');
 const connectToDB = require('./db/db');
 const userRoutes = require('./routes/user.routes');
 const captainRoutes = require('./routes/captain.routes');
+const mapRoutes = require('./routes/maps.routes');  
+const rideRoutes = require('./routes/ride.routes');
 
 // Initialize app and database connection
 const app = express();
@@ -34,6 +36,12 @@ app.get('/', (req, res) => {
 // Register routes
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
+app.use('/maps', mapRoutes);
+console.log('About to register ride routes');
+app.use('/rides', rideRoutes);
+console.log('Ride routes registered');
+
+
 
 // Start the server
 const PORT = process.env.PORT || 5001;
