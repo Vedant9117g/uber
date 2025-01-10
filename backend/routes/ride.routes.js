@@ -4,7 +4,6 @@ const { body, query } = require('express-validator');
 const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-console.log('Ride routes file loaded at runtime');
 
 // Test Routes
 router.get('/test', (req, res) => {
