@@ -5,48 +5,46 @@ const crypto = require('crypto');
 
 async function getFare(pickup, destination) {
     if (!pickup || !destination) {
-      throw new Error('Pickup and destination are required');
+        throw new Error('Pickup and destination are required');
     }
-  
+
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
-  
+
     const baseFare = {
-      auto: 30,
-      car: 50,
-      moto: 20
+        auto: 30,
+        car: 50,
+        moto: 20
     };
-  
+
     const perKmRate = {
-      auto: 10,
-      car: 11,
-      moto: 8
+        auto: 10,
+        car: 11,
+        moto: 8
     };
-  
+
     const perMinuteRate = {
-      auto: 2,
-      car: 3,
-      moto: 1.5
+        auto: 2,
+        car: 3,
+        moto: 1.5
     };
-  
+
     console.log(distanceTime);
-  
+
     const fare = {
-      auto: Math.round(baseFare.auto + ((distanceTime.distance / 1000) * perKmRate.auto) + ((distanceTime.duration / 60) * perMinuteRate.auto)),
-      car: Math.round(baseFare.car + ((distanceTime.distance / 1000) * perKmRate.car) + ((distanceTime.duration / 60) * perMinuteRate.car)),
-      moto: Math.round(baseFare.moto + ((distanceTime.distance / 1000) * perKmRate.moto) + ((distanceTime.duration / 60) * perMinuteRate.moto))
+        auto: Math.round(baseFare.auto + ((distanceTime.distance / 1000) * perKmRate.auto) + ((distanceTime.duration / 60) * perMinuteRate.auto)),
+        car: Math.round(baseFare.car + ((distanceTime.distance / 1000) * perKmRate.car) + ((distanceTime.duration / 60) * perMinuteRate.car)),
+        moto: Math.round(baseFare.moto + ((distanceTime.distance / 1000) * perKmRate.moto) + ((distanceTime.duration / 60) * perMinuteRate.moto))
     };
-  
+
     // Ensure the fare values are not NaN
     if (isNaN(fare.auto) || isNaN(fare.car) || isNaN(fare.moto)) {
-      throw new Error('Calculated fare is invalid');
+        throw new Error('Calculated fare is invalid');
     }
-  
+
     return fare;
-  }
-  
+}
 
 module.exports.getFare = getFare;
-
 
 function getOtp(num) {
     function generateOtp(num) {
@@ -56,10 +54,7 @@ function getOtp(num) {
     return generateOtp(num);
 }
 
-
-module.exports.createRide = async ({
-    user, pickup, destination, vehicleType
-}) => {
+module.exports.createRide = async ({ user, pickup, destination, vehicleType }) => {
     if (!user || !pickup || !destination || !vehicleType) {
         throw new Error('All fields are required');
     }
@@ -73,8 +68,31 @@ module.exports.createRide = async ({
         pickup,
         destination,
         otp: getOtp(6),
-        fare: fare[ vehicleType ]
-    })
+        fare: fare[vehicleType]
+    });
+
+    return ride;
+}
+
+module.exports.confirmRide = async ({ rideId, captain }) => {
+    if (!rideId) {
+        throw new Error('Ride id is required');
+    }
+
+    await rideModel.findOneAndUpdate({
+        _id: rideId
+    }, {
+        status: 'accepted',
+        captain: captain._id
+    });
+
+    const ride = await rideModel.findOne({
+        _id: rideId
+    }).populate('user').populate('captain').select('+otp');
+
+    if (!ride) {
+        throw new Error('Ride not found');
+    }
 
     return ride;
 }

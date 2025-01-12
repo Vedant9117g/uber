@@ -5,46 +5,27 @@ const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 
-// Test Routes
-router.get('/test', (req, res) => {
-  console.log('Test route triggered');
-  res.send('Rides router is working!');
-});
+router.post('/create',
+    authMiddleware.authUser,
+    body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
+    body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
+    body('vehicleType').isString().isIn([ 'auto', 'car', 'moto' ]).withMessage('Invalid vehicle type'),
+    rideController.createRide
+)
 
-router.get('/', (req, res) => {
-  res.send('Rides router working!');
-});
+router.get('/get-fare',
+    authMiddleware.authUser,
+    query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
+    query('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
+    rideController.getFare
+)
 
-// Create Ride Route
-router.post(
-  '/create',
-  authMiddleware.authUser, // Ensure this middleware is working
-  body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
-  body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
-  body('vehicleType')
-    .isString()
-    .isIn(['auto', 'car', 'moto'])
-    .withMessage('Invalid vehicle type'),
-  (req, res, next) => {
-    // Log validation results
-    console.log('Validation passed for /create');
-    next();
-  },
-  rideController.createRide
-);
+router.post('/confirm',
+    authMiddleware.authCaptain,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    rideController.confirmRide
+)
 
-// Get Fare Route
-router.get(
-  '/get-fare',
-//   authMiddleware.authUser, // Ensure this middleware is working
-  query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
-  query('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
-  (req, res, next) => {
-    // Log validation results
-    console.log('Validation passed for /get-fare');
-    next();
-  },
-  rideController.getFare
-);
+
 
 module.exports = router;
